@@ -42,20 +42,19 @@ async function startCamera() {
 }
 
 // 3. リアルタイム検出ループ
+let results;
 let lastVideoTime = -1;
 async function predictWebcam() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
   if (video.currentTime !== lastVideoTime) {
-    lastVideoTime = video.currentTime;
-    const results = poseLandmarker.detectForVideo(video, performance.now());
-
-    ctx.fillStyle = "blue";
-    ctx.rect(0, 0, canvas.width, canvas.height);
-    ctx.fill();
-    for (const landmark of results.landmarks) {
-      drawStickman(ctx, landmark);
-    }
+    results = poseLandmarker.detectForVideo(video, performance.now());
+  }
+  ctx.fillStyle = "blue";
+  ctx.rect(0, 0, canvas.width, canvas.height);
+  ctx.fill();
+  for (const landmark of results.landmarks) {
+    drawStickman(ctx, landmark);
   }
   requestAnimationFrame(predictWebcam);
 }
