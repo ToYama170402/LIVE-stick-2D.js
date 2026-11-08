@@ -22,8 +22,9 @@ async function initMediaPipe() {
 
   poseLandmarker = await PoseLandmarker.createFromOptions(vision, {
     baseOptions: {
-      modelAssetPath:
+      modelAssetPath: await getModel(
         "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/latest/pose_landmarker_lite.task",
+      ),
       delegate: "GPU",
     },
     runningMode: "VIDEO",
@@ -34,6 +35,19 @@ async function initMediaPipe() {
   startCamera();
 }
 
+async function getModel(modelUrl) {
+  const cache = await caches.open("pose-landmarker");
+  let response = await cache.match(modelUrl);
+  if (!response) {
+    response = await fetch(modelUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch model from ${modelUrl}`);
+    }
+    await cache.put(modelUrl, response.clone());
+  }
+  const blob = await response.blob();
+  return URL.createObjectURL(blob);
+}
 // 2. カメラの起動
 async function startCamera() {
   const stream = await navigator.mediaDevices.getUserMedia({ video: true });
